@@ -3,6 +3,34 @@
 
 # Get all Files in Folder
 
+function Test-FileLock 
+{
+    param ([parameter(Mandatory=$true)][string]$Path)
+
+    $oFile = New-Object System.IO.FileInfo $Path
+
+    if ((Test-Path -Path $Path) -eq $false) 
+    {
+        return $false
+    }
+
+    try 
+    {
+        $oStream = $oFile.Open([System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+
+        if ($oStream) 
+        {
+            $oStream.Close()
+        }
+        $false
+    } 
+    catch 
+    {
+    # file is locked by a process.
+    return $true
+    }
+}
+
 $PSPath = $env:PSModulePath
 $Separator = ";"
 $Modulepath = ($PSPath.Split($Separator))[0]
@@ -39,9 +67,7 @@ foreach ($File in $Files)
     {
         New-Item $DayPath -Type Directory
     }
-        $Today = Get-Date
-        $DateString = $day + "/" + $month + "/" + $year
-        If ($Today.ToShortDateString() -like $DateString)
+        if ((Test-FileLock($File.FullName)) -eq $true)
         {
             Write-Host "File in use"
         }
@@ -49,30 +75,4 @@ foreach ($File in $Files)
         { 
             Move-Item $File.FullName $DayPath -Force
         }
-}
-
-
-
-function Test-FileLock {
-  param (
-    [parameter(Mandatory=$true)][string]$Path
-  )
-
-  $oFile = New-Object System.IO.FileInfo $Path
-
-  if ((Test-Path -Path $Path) -eq $false) {
-    return $false
-  }
-
-  try {
-    $oStream = $oFile.Open([System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
-
-    if ($oStream) {
-      $oStream.Close()
-    }
-    $false
-  } catch {
-    # file is locked by a process.
-    return $true
-  }
 }
