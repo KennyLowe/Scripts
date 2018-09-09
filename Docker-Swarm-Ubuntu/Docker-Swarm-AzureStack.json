@@ -40,6 +40,7 @@
         "agentVMSize": {
             "type": "string",
             "defaultValue": "Standard_A1",
+            "AllowedValues":"Standard_A1",
             "metadata": {
                 "description": "The size of the Agent Virtual Machine. Ex: Standard_XX where XX can A1, A2, A3 etc"
             }
